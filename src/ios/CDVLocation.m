@@ -132,7 +132,13 @@
         return;
     }
 #endif
-    
+    // Hard coded support for background mode iOS 9
+    // same as default behaviour for iOS < 9
+    if ([self.locationManager respondsToSelector:@selector(allowsBackgroundLocationUpdates)]) {
+        self.locationManager.allowsBackgroundLocationUpdates = YES;
+        self.locationManager.pausesLocationUpdatesAutomatically = NO;
+    }
+
     // Tell the location manager to start notifying us of location updates. We
     // first stop, and then start the updating to ensure we get at least one
     // update, even if our location did not change.
