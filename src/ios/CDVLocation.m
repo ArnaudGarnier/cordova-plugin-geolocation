@@ -18,6 +18,7 @@
  */
 
 #import "CDVLocation.h"
+#import <Cordova/NSArray+Comparisons.h>
 
 #pragma mark Constants
 
@@ -26,6 +27,14 @@
 #define kPGLocationForcePromptKey @"forcePrompt"
 #define kPGLocationDistanceFilterKey @"distanceFilter"
 #define kPGLocationFrequencyKey @"frequency"
+
+//Edited by kingalione: START
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+//Edited by kingalione: END
 
 #pragma mark -
 #pragma mark Categories
@@ -53,14 +62,25 @@
 
 @synthesize locationManager, locationData;
 
-- (void)pluginInitialize
-{
-    self.locationManager = [[CLLocationManager alloc] init];
-    self.locationManager.delegate = self; // Tells the location manager to send updates to this object
-    __locationStarted = NO;
-    __highAccuracyEnabled = NO;
-    self.locationData = nil;
-}
+    - (CDVPlugin*)initWithWebView:(UIWebView*)theWebView
+    {
+        self = (CDVLocation*)[super initWithWebView:(UIWebView*)theWebView];
+        if (self) {
+            self.locationManager = [[CLLocationManager alloc] init];
+
+            //Edited by kingalione: START
+            if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"9.0")) {
+                self.locationManager.allowsBackgroundLocationUpdates = YES;
+            }
+            //Edited by kingalione: END
+
+            self.locationManager.delegate = self; // Tells the location manager to send updates to this object
+            __locationStarted = NO;
+            __highAccuracyEnabled = NO;
+            self.locationData = nil;
+        }
+        return self;
+    }
 
 - (BOOL)isAuthorized
 {
@@ -132,12 +152,6 @@
         return;
     }
 #endif
-    // Hard coded support for background mode iOS 9
-    // same as default behaviour for iOS < 9
-    if ([self.locationManager respondsToSelector:@selector(allowsBackgroundLocationUpdates)]) {
-        self.locationManager.allowsBackgroundLocationUpdates = YES;
-        self.locationManager.pausesLocationUpdatesAutomatically = NO;
-    }
 
     // Tell the location manager to start notifying us of location updates. We
     // first stop, and then start the updating to ensure we get at least one
