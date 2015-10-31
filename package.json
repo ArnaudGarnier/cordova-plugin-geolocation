@@ -1,6 +1,6 @@
 {
   "name": "tal-cordova-plugin-geolocation",
-  "version": "1.0.2-tal",
+  "version": "1.0.4-tal",
   "description": "Cordova Geolocation Plugin",
   "cordova": {
     "id": "tal-cordova-plugin-geolocation",
